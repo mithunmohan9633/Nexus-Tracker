@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9wezvqlc#$y_3-n61ptrv)r*xypkpt7+cpoolziu4hrvfs$!j5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1', '*']
 
 
 # Application definition
@@ -118,6 +118,7 @@ USE_TZ = True  # Times stored in UTC, displayed in Asia/Kolkata
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
