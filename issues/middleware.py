@@ -13,15 +13,13 @@ class ReminderMiddleware:
         return response
 
     def check_deadlines(self):
-        today = timezone.now().date()
-        if not DailyTaskRun.objects.filter(date=today).exists():
-            try:
+        try:
+            today = timezone.now().date()
+            if not DailyTaskRun.objects.filter(date=today).exists():
                 DailyTaskRun.objects.create(date=today)
                 self.send_reminders(today)
-            except IntegrityError:
-                pass
-            except Exception:
-                pass
+        except Exception:
+            pass
 
     def send_reminders(self, today):
         target_date = today + timedelta(days=7)
