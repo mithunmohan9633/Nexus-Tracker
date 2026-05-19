@@ -7,10 +7,6 @@
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/staticfiles_build/static/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "bug_tracker/wsgi.py"
     }
