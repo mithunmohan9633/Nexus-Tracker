@@ -76,11 +76,18 @@ WSGI_APPLICATION = 'bug_tracker.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 import dj_database_url
-DATABASES = {
-    "default": dj_database_url.config(env='POSTGRES_URL', default="sqlite:///" + str(BASE_DIR / "db.sqlite3"), conn_max_age=600)
-}
+import os
 
-
+db_url = os.environ.get('POSTGRES_URL')
+if db_url:
+    db_url = db_url.split('?')[0]  # Remove Supabase specific query params
+    DATABASES = {
+        "default": dj_database_url.parse(db_url, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(default="sqlite:///" + str(BASE_DIR / "db.sqlite3"), conn_max_age=600)
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
