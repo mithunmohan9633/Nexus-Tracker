@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'bug_tracker.wsgi.application'
 
 import dj_database_url
 DATABASES = {
-    "default": dj_database_url.config(default="sqlite:///" + str(BASE_DIR / "db.sqlite3"), conn_max_age=600)
+    "default": dj_database_url.config(env='POSTGRES_URL', default="sqlite:///" + str(BASE_DIR / "db.sqlite3"), conn_max_age=600)
 }
 
 
