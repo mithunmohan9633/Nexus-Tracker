@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1>Dashboard</h1>
+    <a href="{% url 'ticket_create' %}" class="btn btn-primary btn-header">+ New Issue</a>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <h3>Open Issues</h3>
+        <div class="value">{{ total_open }}</div>
+    </div>
+    <div class="metric-card" style="border-color: var(--accent-purple);">
+        <h3 style="color: var(--accent-purple);">Assigned to Me</h3>
+        <div class="value">{{ my_tickets_count }}</div>
+    </div>
+    <div class="metric-card">
+        <h3>Team Members</h3>
+        <div class="value">Active</div>
+    </div>
+</div>
+
+<h2 style="margin-bottom: 16px;">Recently Active</h2>
+<div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Assignee</th>
+                <th>Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in recent_tickets %}
+            <tr>
+                <td><a href="{% url 'ticket_update' t.pk %}" style="color: var(--text-primary); text-decoration: none; font-weight: 500;">{{ t.title }}</a></td>
+                <td><span class="badge badge-STATUS-{{ t.status }}">{{ t.get_status_display }}</span></td>
+                <td><span class="badge badge-PRIORITY-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+                <td style="color: var(--text-muted);">{{ t.assignee.username|default:"Unassigned" }}</td>
+                <td style="color: var(--text-muted); font-size: 14px;">{{ t.updated_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 40px;">No tickets found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

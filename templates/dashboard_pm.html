@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1>{{ role_title }} Dashboard</h1>
+    <a href="{% url 'project_create' %}" class="btn btn-primary btn-header">+ New Project</a>
+</div>
+<div class="metrics-grid">
+    <a href="{% url 'project_list_all' %}" style="text-decoration: none; color: inherit; display: block;"><div class="metric-card hover-card"><h3>Total Projects</h3><div class="value">{{ projects_count }}</div></div></a>
+    <a href="{% url 'bugs_open_list' %}" style="text-decoration: none; color: inherit; display: block;"><div class="metric-card hover-card" style="border-color: var(--accent-red);"><h3 style="color: var(--accent-red);">System Open Bugs</h3><div class="value">{{ open_tickets }}</div></div></a>
+    <a href="{% url 'bugs_closed_list' %}" style="text-decoration: none; color: inherit; display: block;"><div class="metric-card hover-card" style="border-color: var(--accent-green);"><h3 style="color: var(--accent-green);">Closed Bugs</h3><div class="value">{{ closed_tickets }}</div></div></a>
+</div>
+<h2>Recent Projects</h2>
+<table>
+    <tr><th>Project Name</th><th>Manager / APM</th><th>Created</th></tr>
+    {% for p in recent_projects %}
+    <tr><td><a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a></td><td>{{ p.apm.username|default:"Unassigned" }}</td><td>{{ p.created_at|date:"M d, Y" }}</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

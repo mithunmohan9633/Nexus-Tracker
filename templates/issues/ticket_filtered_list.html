@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1>{{ title }}</h1>
+    <a href="{% url 'dashboard' %}" class="btn" style="background:var(--bg-card); color:var(--text-primary);">← Back to Dashboard</a>
+</div>
+
+<div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;">
+    <table>
+        <thead>
+            <tr>
+                <th>ISSUE-#</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Assignee</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tickets %}
+            <tr>
+                <td style="color: var(--text-muted); font-family: monospace;">#{{ t.pk }}</td>
+                <td><a href="{% url 'ticket_detail' t.pk %}" style="color: var(--accent-blue); text-decoration: underline; font-weight: 500;">{{ t.title }}</a></td>
+                <td><span class="badge badge-STATUS-{{ t.status }}">{{ t.get_status_display }}</span></td>
+                <td><span class="badge badge-PRIORITY-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+                <td style="color: var(--text-muted);">{{ t.assignee.username|default:"Unassigned" }}</td>
+                <td style="color: var(--text-muted); font-size: 14px;">{{ t.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center; padding: 40px; color:var(--text-muted);">No pending points match this filter!</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

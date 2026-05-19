@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-action" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1>All Projects</h1>
+    {% if user.profile.role == 'PM' %}<a href="{% url 'project_create' %}" class="btn btn-primary">+ New Project</a>{% endif %}
+</div>
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Project Name</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Manager (APM)</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Deadline</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Status</th>
+        </tr>
+        {% for p in projects %}
+        <tr>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);"><a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a></td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ p.apm.username|default:"Unassigned" }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ p.deadline|date:"M d, Y"|default:"None" }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+                {% if p.is_completed %}
+                <span style="background: var(--accent-green); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Completed</span>
+                {% else %}
+                <span style="background: var(--accent-blue); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Active</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="padding: 12px; text-align: center; color: var(--text-muted);">No projects found.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

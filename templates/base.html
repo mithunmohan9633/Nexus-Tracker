@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="sidebar">
+        <div class="logo">NexusTracker</div>
+        <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+        {% if user.is_authenticated and user.profile.role == 'PM' %}
+        <a href="{% url 'analytics_dashboard' %}" class="nav-link">Analytics</a>
+        {% endif %}
+        <a href="{% url 'inbox' %}" class="nav-link" style="display: flex; align-items: center; justify-content: space-between;">
+            Inbox
+            <span id="inbox-badge" style="background: var(--accent-red); color: white; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; {% if unread_messages_count == 0 %}display:none;{% endif %}">{{ unread_messages_count }}</span>
+        </a>
+        
+        <div style="flex-grow: 1;"></div>
+
+        <!-- User Profile Card -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 10px;">
+            <!-- Avatar + Name clickable -->
+            <div onclick="toggleUserCard()" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: white; flex-shrink: 0;">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div style="overflow: hidden;">
+                    <div style="font-weight: 600; font-size: 13px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.full_name|default:user.username }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">{{ user.profile.get_role_display }}</div>
+                </div>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);" id="user-chevron">▲</span>
+            </div>
+
+            <!-- Dropdown User Details -->
+            <div id="userCard" style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-top: 6px; font-size: 12px; color: var(--text-muted); display: block; border: 1px solid rgba(255,255,255,0.07);">
+                <div style="margin-bottom: 6px;"><span style="color: var(--text-color); font-weight: 600;">Email:</span> {{ user.email|default:"Not set" }}</div>
+                <div style="margin-bottom: 6px;"><span style="color: var(--text-color); font-weight: 600;">Mobile:</span> {{ user.profile.mobile_number|default:"Not set" }}</div>
+                <div><span style="color: var(--text-color); font-weight: 600;">Role:</span> {{ user.profile.get_role_display }}</div>
+            </div>
+
+            <!-- Logout Button -->
+            <button onclick="openLogoutModal()" style="display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 8px; padding: 9px 12px; border-radius: 8px; border: none; background: rgba(239,68,68,0.1); color: #f87171; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                <span>&#x2192;</span> Log Out
+            </button>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div id="logoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background: var(--card-bg); padding: 32px; border-radius: 14px; max-width: 360px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                <div style="font-size: 40px; margin-bottom: 12px;">👋</div>
+                <h2 style="margin-bottom: 8px;">Log Out?</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Are you sure you want to log out of NexusTracker?</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="closeLogoutModal()" style="padding: 10px 24px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; font-weight: 600;">Cancel</button>
+                    <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" style="padding: 10px 24px; border-radius: 8px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; font-size: 14px; cursor: pointer; font-weight: 600;">Yes, Log Out</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function toggleUserCard() {
+                const card = document.getElementById('userCard');
+                const chevron = document.getElementById('user-chevron');
+                if (card.style.display === 'none') {
+                    card.style.display = 'block';
+                    chevron.textContent = '▲';
+                } else {
+                    card.style.display = 'none';
+                    chevron.textContent = '▼';
+                }
+            }
+            function openLogoutModal() {
+                const modal = document.getElementById('logoutModal');
+                modal.style.display = 'flex';
+            }
+            function closeLogoutModal() {
+                const modal = document.getElementById('logoutModal');
+                modal.style.display = 'none';
+            }
+        </script>
+    </nav>
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    {% else %}
+        {% block login %}{% endblock %}
+    {% endif %}
+
+    <div id="notification-toast" style="display:none;position:fixed;top:24px;right:24px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;padding:16px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(59,130,246,0.4);z-index:9999;max-width:360px;animation:slideIn 0.4s ease;cursor:pointer;border:1px solid rgba(255,255,255,0.15);" onclick="this.style.display='none'">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">&#128233;</span>
+            <div>
+                <div style="font-weight:700;font-size:13px;margin-bottom:2px;" id="notif-title"></div>
+                <div style="font-size:12px;opacity:0.85;" id="notif-sub"></div>
+            </div>
+            <span style="margin-left:auto;opacity:0.6;font-size:18px;">&times;</span>
+        </div>
+    </div>
+    <style>@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}</style>
+    <script>
+    (function(){
+        let lastCount = -1;
+        function checkNotifs(){
+            fetch('/api/notifications/')
+            .then(r=>r.json())
+            .then(d=>{
+                if(lastCount>=0 && d.unread_count>lastCount && d.latest_subject){
+                    let t=document.getElementById('notification-toast');
+                    document.getElementById('notif-title').textContent='New message from '+d.latest_sender;
+                    document.getElementById('notif-sub').textContent=d.latest_subject;
+                    t.style.display='block';
+                    t.style.animation='none';
+                    t.offsetHeight;
+                    t.style.animation='slideIn 0.4s ease';
+                    setTimeout(()=>{t.style.display='none'},6000);
+                    let badge=document.getElementById('inbox-badge');
+                    if(badge) badge.textContent=d.unread_count;
+                }
+                lastCount=d.unread_count;
+            }).catch(()=>{});
+        }
+        setInterval(checkNotifs, 5000);
+        checkNotifs();
+    })();
+    </script>
+</body>
+</html>
+

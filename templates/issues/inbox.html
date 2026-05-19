@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1>Inbox</h1>
+    <a href="{% url 'compose_message' %}" class="btn btn-primary" style="width:auto;padding:8px 18px;font-size:13px;">&#9993; Compose</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 380px 1fr; gap: 24px; height: calc(100vh - 180px);">
+    <!-- Left Pane: Message List -->
+    <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column;">
+        {% for msg in messages %}
+        <div class="message-row {% if not msg.is_read %}unread{% endif %}" 
+             data-id="{{ msg.pk }}" 
+             style="padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; position: relative;">
+            {% if not msg.is_read %}
+            <div class="unread-dot" style="position: absolute; left: 8px; top: 22px; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%;"></div>
+            {% endif %}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; padding-left: 12px;">
+                <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);">{{ msg.sender.username|default:"System" }}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">{{ msg.created_at|date:"M d" }}</span>
+            </div>
+            <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 4px; padding-left: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ msg.subject }}
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); padding-left: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ msg.body|truncatechars:60 }}
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">Your inbox is empty.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Right Pane: Message Detail -->
+    <div id="message-detail-pane" style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); padding: 32px; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted); position: relative;">
+        <div id="placeholder-content" style="text-align: center;">
+            <span style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;">&#128233;</span>
+            <p>Select a message to read</p>
+        </div>
+        
+        <div id="actual-content" style="display: none; width: 100%; height: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div>
+                    <h2 id="msg-subject" style="margin: 0 0 8px 0; font-size: 24px;"></h2>
+                    <div style="color: var(--text-muted); font-size: 14px;">
+                        From: <strong id="msg-sender" style="color: var(--text-primary);"></strong> 
+                        <span id="msg-project-wrap">| Project: <span id="msg-project"></span></span>
+                    </div>
+                </div>
+                <div id="msg-date" style="font-size: 12px; color: var(--text-muted);"></div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 24px 0;">
+            <div id="msg-body" style="white-space: pre-wrap; line-height: 1.7; color: var(--text-primary); font-size: 15px;"></div>
+            
+            <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <a id="msg-reply-btn" href="#" class="btn btn-primary" style="width: auto; padding: 10px 24px;">Reply</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.message-row:hover { background: rgba(255,255,255,0.03); }
+.message-row.active { background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent-blue); padding-left: 13px !important; }
+.message-row.unread { background: rgba(59, 130, 246, 0.03); }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.message-row');
+    const placeholder = document.getElementById('placeholder-content');
+    const actualContent = document.getElementById('actual-content');
+    
+    rows.forEach(row => {
+        row.onclick = function() {
+            const msgId = this.dataset.id;
+            
+            // UI Updates
+            rows.forEach(r => r.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Mark as read in UI
+            const dot = this.querySelector('.unread-dot');
+            if (dot) dot.remove();
+            this.classList.remove('unread');
+
+            // Fetch details
+            fetch(`/api/messages/${msgId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    placeholder.style.display = 'none';
+                    actualContent.style.display = 'block';
+                    
+                    document.getElementById('msg-subject').textContent = data.subject;
+                    document.getElementById('msg-sender').textContent = data.sender;
+                    document.getElementById('msg-date').textContent = data.date;
+                    document.getElementById('msg-body').textContent = data.body;
+                    
+                    if (data.project) {
+                        document.getElementById('msg-project-wrap').style.display = 'inline';
+                        document.getElementById('msg-project').textContent = data.project;
+                    } else {
+                        document.getElementById('msg-project-wrap').style.display = 'none';
+                    }
+                    
+                    if (data.sender_id) {
+                        document.getElementById('msg-reply-btn').style.display = 'inline-block';
+                        document.getElementById('msg-reply-btn').href = `/inbox/compose/?to=${data.sender_id}`;
+                    } else {
+                        document.getElementById('msg-reply-btn').style.display = 'none';
+                    }
+                });
+        };
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius); border: 1px solid var(--border); max-width: 600px; margin-top: 24px;">
+    <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px; border-radius: 8px; margin-bottom: 20px;">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+        <div class="form-group">
+            <label>{{ field.label }}</label>
+            {% if field.name == 'recipients' %}
+                <div class="tag-input-wrapper" id="tag-input-wrapper">
+                    <div class="tag-input-container" id="tag-container">
+                        <!-- Tags will appear here -->
+                        <input type="text" id="recipient-search" placeholder="Search recipients..." autocomplete="off">
+                        <div class="tag-dropdown" id="tag-dropdown"></div>
+                    </div>
+                    <!-- The actual hidden field that Django expects -->
+                    <div style="display:none;">{{ field }}</div>
+                {% if field.errors %}
+                <div style="color: var(--accent-red); font-size: 12px; margin-top: 6px; font-weight: 500;">{{ field.errors.0 }}</div>
+                {% endif %}
+                </div>
+            {% else %}
+                {{ field }}
+                {% if field.errors %}
+                <div style="color: var(--accent-red); font-size: 12px; margin-top: 6px; font-weight: 500;">{{ field.errors.0 }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="margin-top: 16px;">Save</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wrapper = document.getElementById('tag-input-wrapper');
+    if (!wrapper) return;
+
+    const container = document.getElementById('tag-container');
+    const searchInput = document.getElementById('recipient-search');
+    const dropdown = document.getElementById('tag-dropdown');
+    
+    // Find all the real checkboxes from Django's CheckboxSelectMultiple
+    const checkboxes = Array.from(wrapper.querySelectorAll('input[type="checkbox"]'));
+    const userData = checkboxes.map(cb => {
+        const label = cb.parentElement.textContent.trim();
+        return { id: cb.value, name: label, cb: cb };
+    });
+
+    let selectedIds = new Set();
+
+    function renderTags() {
+        // Clear existing chips
+        container.querySelectorAll('.tag-chip').forEach(el => el.remove());
+        
+        selectedIds.forEach(id => {
+            const user = userData.find(u => u.id === id);
+            if (!user) return;
+            
+            const chip = document.createElement('div');
+            chip.className = 'tag-chip';
+            chip.innerHTML = `<span>${user.name}</span><span class="remove-tag" data-id="${id}">&times;</span>`;
+            
+            chip.querySelector('.remove-tag').onclick = (e) => {
+                e.stopPropagation();
+                removeTag(id);
+            };
+            
+            container.insertBefore(chip, searchInput);
+        });
+        
+        // Sync with hidden checkboxes
+        checkboxes.forEach(cb => {
+            cb.checked = selectedIds.has(cb.value);
+        });
+    }
+
+    function removeTag(id) {
+        selectedIds.delete(id);
+        renderTags();
+    }
+
+    function addTag(id) {
+        selectedIds.add(id);
+        searchInput.value = '';
+        dropdown.style.display = 'none';
+        renderTags();
+    }
+
+    function updateDropdown(query) {
+        dropdown.innerHTML = '';
+        const filtered = userData.filter(u => 
+            u.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (filtered.length > 0 && query.length > 0) {
+            filtered.forEach(u => {
+                const item = document.createElement('div');
+                item.className = 'tag-dropdown-item' + (selectedIds.has(u.id) ? ' selected' : '');
+                item.textContent = u.name;
+                item.onclick = () => addTag(u.id);
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+
+    searchInput.oninput = (e) => updateDropdown(e.target.value);
+    
+    searchInput.onfocus = () => {
+        if (searchInput.value.length > 0) dropdown.style.display = 'block';
+    };
+
+    // Close dropdown on click outside
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) dropdown.style.display = 'none';
+    });
+
+    container.onclick = () => searchInput.focus();
+    
+    // Check initial state (if any checkboxes were pre-checked like in a Reply)
+    checkboxes.forEach(cb => {
+        if (cb.checked) selectedIds.add(cb.value);
+    });
+    renderTags();
+});
+</script>
+
+{% endblock %}

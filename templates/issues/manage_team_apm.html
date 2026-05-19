@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Reassign Ticket Modal -->
+<div id="reassignModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--card-bg); padding:30px; border-radius:14px; max-width:420px; width:90%; border:1px solid var(--border-color); box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <h2 style="margin-bottom:8px;">Reassign Bug</h2>
+        <p id="reassignTicketTitle" style="color:var(--text-muted); font-size:13px; margin-bottom:20px;"></p>
+        <form id="reassignForm" method="post" action="">
+            {% csrf_token %}
+            <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px;">Assign to Developer:</label>
+            <select name="new_assignee" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:#1e293b; color:var(--text-color); font-size:14px; margin-bottom:20px;">
+                {% for dev in developers %}
+                <option value="{{ dev.pk }}">{{ dev.profile.full_name|default:dev.username }}</option>
+                {% endfor %}
+            </select>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" onclick="closeReassignModal()" style="padding:9px 20px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-color); cursor:pointer; font-weight:600;">Cancel</button>
+                <button type="submit" style="padding:9px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; cursor:pointer; font-weight:600;">Reassign</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div style="margin-bottom:30px;">
+    <a href="{% url 'dashboard' %}" style="color:var(--text-muted); text-decoration:none;">&larr; Back to Dashboard</a>
+    <h1 style="margin-top:10px;">Manage Team — {{ project.name }}</h1>
+</div>
+
+<!-- Edit Team Members -->
+<div class="card" style="margin-bottom:30px;">
+    <h2 style="margin-bottom:16px;">Edit Team Members</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+            <div>
+                <h3 style="margin-bottom:12px; font-size:14px; color:var(--text-muted);">FUNCTIONAL ANALYSTS</h3>
+                {{ form.functional_analysts }}
+            </div>
+            <div>
+                <h3 style="margin-bottom:12px; font-size:14px; color:var(--text-muted);">DEVELOPERS</h3>
+                {{ form.developers }}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:20px;">Save Team</button>
+    </form>
+</div>
+
+<!-- Open Tickets with Reassign -->
+<div class="card">
+    <h2 style="margin-bottom:16px;">Open Tickets</h2>
+    <table style="width:100%; border-collapse:collapse;">
+        <tr>
+            <th style="text-align:left; padding:12px; border-bottom:2px solid var(--border-color);">Ticket</th>
+            <th style="text-align:left; padding:12px; border-bottom:2px solid var(--border-color);">Priority</th>
+            <th style="text-align:left; padding:12px; border-bottom:2px solid var(--border-color);">Status</th>
+            <th style="text-align:left; padding:12px; border-bottom:2px solid var(--border-color);">Assigned To</th>
+            <th style="text-align:left; padding:12px; border-bottom:2px solid var(--border-color);">Action</th>
+        </tr>
+        {% for ticket in open_tickets %}
+        <tr>
+            <td style="padding:12px; border-bottom:1px solid var(--border-color);">
+                <a href="{% url 'ticket_detail' ticket.pk %}" style="color:var(--accent-blue); text-decoration:none;">{{ ticket.title }}</a>
+            </td>
+            <td style="padding:12px; border-bottom:1px solid var(--border-color);">{{ ticket.get_priority_display }}</td>
+            <td style="padding:12px; border-bottom:1px solid var(--border-color);">{{ ticket.get_status_display }}</td>
+            <td style="padding:12px; border-bottom:1px solid var(--border-color);">{{ ticket.assignee.username|default:"Unassigned" }}</td>
+            <td style="padding:12px; border-bottom:1px solid var(--border-color);">
+                <button onclick="openReassignModal('{{ ticket.pk }}', '{{ ticket.title|escapejs }}')"
+                    style="padding:5px 14px; border-radius:6px; border:none; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:12px; font-weight:600; cursor:pointer;">
+                    ✏ Edit
+                </button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="padding:12px; text-align:center; color:var(--text-muted);">No open tickets in this project.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+function openReassignModal(ticketPk, ticketTitle) {
+    document.getElementById('reassignTicketTitle').textContent = 'Ticket: ' + ticketTitle;
+    document.getElementById('reassignForm').action = '/tickets/' + ticketPk + '/reassign-apm/';
+    const modal = document.getElementById('reassignModal');
+    modal.style.display = 'flex';
+}
+function closeReassignModal() {
+    document.getElementById('reassignModal').style.display = 'none';
+}
+</script>
+{% endblock %}

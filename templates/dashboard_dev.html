@@ -1,0 +1,85 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1>{{ role_title }} Workspace</h1>
+</div>
+
+<!-- Metrics -->
+<div class="metrics-grid">
+    <div class="metric-card" style="border-color: var(--accent-red);">
+        <h3 style="color:var(--accent-red);">Open / In Progress</h3>
+        <div class="value">{{ open_tasks.count }}</div>
+    </div>
+    <div class="metric-card" style="border-color: #f59e0b;">
+        <h3 style="color:#f59e0b;">Awaiting FA Verification</h3>
+        <div class="value">{{ pending_review_tasks.count }}</div>
+    </div>
+</div>
+
+<!-- Awaiting Verification Banner -->
+{% if pending_review_tasks %}
+<div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 32px;">
+    <h3 style="margin:0 0 16px 0; color:#f59e0b;">Awaiting FA Verification</h3>
+    <table>
+        <thead>
+            <tr><th>ISSUE-#</th><th>Title</th><th>Project</th><th>Submitted</th></tr>
+        </thead>
+        <tbody>
+            {% for t in pending_review_tasks %}
+            <tr>
+                <td style="color:var(--text-muted); font-family:monospace; font-size:13px;">#{{ t.pk }}</td>
+                <td><a href="{% url 'ticket_detail' t.pk %}" style="color:var(--text-primary); font-weight:500;">{{ t.title }}</a></td>
+                <td style="color:var(--text-muted);">{{ t.project.name }}</td>
+                <td style="color:var(--text-muted); font-size:13px;">{{ t.updated_at|date:"M d, g:i a" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- All Active Bugs -->
+<h2>All My Assigned Bugs</h2>
+<p style="color:var(--text-muted); margin-bottom:16px;">All bugs currently assigned to you. Closed bugs are hidden automatically once the FA approves them.</p>
+<div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-top: 8px;">
+    <table>
+        <thead>
+            <tr>
+                <th>ISSUE-#</th>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Module</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in all_active_bugs %}
+            <tr>
+                <td style="color:var(--text-muted); font-family:monospace; font-size:13px;">#{{ t.pk }}</td>
+                <td style="font-weight:500;"><a href="{% url 'ticket_detail' t.pk %}" style="color:var(--accent-blue); text-decoration:underline;">{{ t.title }}</a></td>
+                <td style="color:var(--text-muted);">{{ t.project.name }}</td>
+                <td style="color:var(--text-muted); font-size:13px;">{{ t.modules|default:"-" }}</td>
+                <td><span class="badge badge-PRIORITY-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+                <td><span class="badge badge-STATUS-{{ t.status }}">{{ t.get_status_display }}</span></td>
+                <td>
+                    {% if t.status != 'PENDING_REVIEW' %}
+                    <a href="{% url 'ticket_detail' t.pk %}" class="btn" style="background:#334155; padding:5px 12px; font-size:12px;">Open</a>
+                    {% else %}
+                    <span style="color:var(--text-muted); font-size:12px;">Pending Review</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted);">
+                    All clear! No bugs currently assigned to you.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

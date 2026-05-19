@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views, analytics_views
+
+urlpatterns = [
+    path('projects/<int:pk>/manage-team/', views.manage_team_apm, name='manage_team_apm'),
+    path('tickets/<int:ticket_pk>/reassign-apm/', views.reassign_ticket_apm, name='reassign_ticket_apm'),
+    path('projects/all/', views.project_list_all, name='project_list_all'),
+    path('bugs/open/', views.bugs_open_list, name='bugs_open_list'),
+    path('bugs/open/<int:pk>/', views.bugs_open_detail, name='bugs_open_detail'),
+    path('bugs/closed/', views.bugs_closed_list, name='bugs_closed_list'),
+    path('bugs/closed/<int:pk>/', views.bugs_closed_detail, name='bugs_closed_detail'),
+    path('analytics/', analytics_views.analytics_dashboard, name='analytics_dashboard'),
+    path('', views.dashboard, name='dashboard'),
+    path('hr/', views.hr_dashboard, name='hr_dashboard'),
+    path('hr/employees/new/', views.employee_create, name='employee_create'),
+    path('hr/employees/<int:pk>/', views.employee_detail_view, name='employee_detail'),
+    path('hr/employees/<int:pk>/delete/', views.employee_delete, name='employee_delete'),
+    path('projects/new/', views.project_create, name='project_create'),
+    path('projects/<int:pk>/', views.project_detail, name='project_detail'),
+    path('projects/<int:pk>/complete/', views.project_complete, name='project_complete'),
+    path('projects/<int:pk>/team/', views.project_edit_team, name='project_edit_team'),
+    path('tickets/new/', views.ticket_create, name='ticket_create'),
+    path('tickets/<int:pk>/', views.ticket_detail, name='ticket_detail'),
+    path('tickets/<int:pk>/verify/', views.ticket_verify, name='ticket_verify'),
+    path('tickets/<int:pk>/reassign/', views.ticket_reassign, name='ticket_reassign'),
+    path('tickets/filter/', views.ticket_filtered_list, name='ticket_filtered_list'),
+    path('inbox/', views.inbox_view, name='inbox'),
+    path('inbox/messages/<int:pk>/', views.message_detail_view, name='message_detail'),
+    path('inbox/compose/', views.compose_message_view, name='compose_message'),
+    path('api/notifications/', views.check_notifications, name='check_notifications'),
+    path('api/messages/<int:pk>/', views.message_json_view, name='message_json'),
+]

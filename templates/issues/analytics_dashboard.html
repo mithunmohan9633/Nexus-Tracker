@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="color: var(--text-primary);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2>Team Efficiency Analytics</h2>
+        <form method="GET" style="display: flex; align-items: center;">
+            <label for="filter" style="margin-right: 10px; margin-bottom: 0;">Timeframe:</label>
+            <select name="filter" id="filter" onchange="this.form.submit()" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px;">
+                <option value="all" {% if current_filter == 'all' %}selected{% endif %}>All Time</option>
+                <option value="30days" {% if current_filter == '30days' %}selected{% endif %}>Last 30 Days</option>
+                <option value="7days" {% if current_filter == '7days' %}selected{% endif %}>Last 7 Days</option>
+            </select>
+        </form>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+        <!-- Developer Efficiency -->
+        <div style="width: 100%; margin-bottom: 24px;">
+            <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;">
+                <div style="background: rgba(255,255,255,0.02); padding: 16px 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; font-size: 16px;">Developer Workload & Status</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="devChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- FA Efficiency -->
+        <div style="width: 48%; margin-bottom: 24px;">
+            <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; height: 100%;">
+                <div style="background: rgba(255,255,255,0.02); padding: 16px 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; font-size: 16px;">FA Pending Reviews</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="faChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- APM Efficiency -->
+        <div style="width: 48%; margin-bottom: 24px;">
+            <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; height: 100%;">
+                <div style="background: rgba(255,255,255,0.02); padding: 16px 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; font-size: 16px;">APM Project Load</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="apmChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets by Priority -->
+        <div style="width: 48%; margin-bottom: 24px;">
+            <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; height: 100%;">
+                <div style="background: rgba(255,255,255,0.02); padding: 16px 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; font-size: 16px;">Tickets by Priority</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="priorityChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets by Project -->
+        <div style="width: 48%; margin-bottom: 24px;">
+            <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; height: 100%;">
+                <div style="background: rgba(255,255,255,0.02); padding: 16px 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; font-size: 16px;">Tickets by Project</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="projectChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    Chart.defaults.color = '#8892b0';
+    
+    const devMetrics = JSON.parse('{{ dev_metrics_json|escapejs }}');
+    const faMetrics = JSON.parse('{{ fa_metrics_json|escapejs }}');
+    const apmMetrics = JSON.parse('{{ apm_metrics_json|escapejs }}');
+    const priorityMetrics = JSON.parse('{{ priority_metrics_json|escapejs }}');
+    const projectMetrics = JSON.parse('{{ project_metrics_json|escapejs }}');
+
+    // Developer Chart
+    new Chart(document.getElementById('devChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: devMetrics.names,
+            datasets: [
+                { label: 'DONE', data: devMetrics.completed, backgroundColor: '#10b981' },
+                { label: 'IN PROGRESS', data: devMetrics.in_progress, backgroundColor: '#f59e0b' },
+                { label: 'TODO', data: devMetrics.todo, backgroundColor: '#ef4444' }
+            ]
+        },
+        options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
+    });
+
+    // FA Chart
+    new Chart(document.getElementById('faChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: faMetrics.names,
+            datasets: [{ label: 'Tickets Pending Review', data: faMetrics.pending_reviews, backgroundColor: '#3b82f6' }]
+        },
+        options: { responsive: true }
+    });
+
+    // APM Chart
+    new Chart(document.getElementById('apmChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: apmMetrics.names,
+            datasets: [{ label: 'Projects Managed', data: apmMetrics.project_counts, backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#10b981'] }]
+        },
+        options: { responsive: true }
+    });
+
+    // Priority Chart
+    new Chart(document.getElementById('priorityChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: priorityMetrics.labels,
+            datasets: [{ data: priorityMetrics.counts, backgroundColor: ['#64748b', '#3b82f6', '#f59e0b', '#ef4444'] }]
+        },
+        options: { responsive: true }
+    });
+
+    // Project Chart
+    new Chart(document.getElementById('projectChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: projectMetrics.names,
+            datasets: [{ label: 'Tickets per Project', data: projectMetrics.counts, backgroundColor: '#8b5cf6' }]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

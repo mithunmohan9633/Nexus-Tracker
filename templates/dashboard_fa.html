@@ -1,0 +1,106 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1>{{ role_title }} Dashboard</h1>
+    
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <h3>Assigned Projects</h3>
+        <div class="value">{{ my_projects_count }}</div>
+    </div>
+    <div class="metric-card" style="border-color: var(--accent-red); transition: all 0.2s; cursor: pointer;" onclick="window.location.href='{% url 'ticket_filtered_list' %}'">
+        <h3 style="color: var(--accent-red);">Grand Total Pending Points</h3>
+        <div class="value">{{ grand_total_pending }}</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Click to view all open items across all projects â†—</div>
+    </div>
+</div>
+
+
+{% if verification_count > 0 %}
+<div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.4); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 32px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; color:#f59e0b;">Pending Your Verification ({{ verification_count }})</h3>
+    </div>
+    <table>
+        <thead>
+            <tr><th>ISSUE-#</th><th>Title</th><th>Project</th><th>Developer</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            {% for t in verification_tickets %}
+            <tr>
+                <td style="color:var(--text-muted); font-family:monospace; font-size:13px;">#{{ t.pk }}</td>
+                <td><a href="{% url 'ticket_detail' t.pk %}" style="color:var(--accent-blue); font-weight:500; text-decoration:underline;">{{ t.title }}</a></td>
+                <td style="color:var(--text-muted);">{{ t.project.name }}</td>
+                <td>{{ t.assignee.username|default:"Unassigned" }}</td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <form action="{% url 'ticket_verify' t.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="approve" class="btn" style="background:var(--accent-green); color:white; padding:5px 12px; font-size:12px;">Approve</button>
+                        </form>
+                        <a href="{% url 'ticket_detail' t.pk %}#reject" class="btn" style="background:var(--accent-red); color:white; padding:5px 12px; font-size:12px;">Reject</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<h2>Your Assigned Projects</h2>
+<p style="color:var(--text-muted); margin-bottom: 24px;">Click the active pending numbers to drill down into the specific issue list.</p>
+
+<div style="display:flex; flex-direction:column; gap:24px;">
+    {% for pw in project_workloads %}
+    <div style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;">
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); background:rgba(255,255,255,0.02); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center;">
+                <h3 style="margin:0; font-size:18px; margin-right:24px;">{{ pw.project.name }}</h3>
+                <a href="{% url 'ticket_create' %}?project={{ pw.project.pk }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;">+ Log Bug</a>
+            </div>
+            <div style="font-weight:600; color:var(--accent-red);">
+                Total Pending Points: 
+                <a href="{% url 'ticket_filtered_list' %}?project={{ pw.project.pk }}" style="color:var(--accent-red); text-decoration:underline;">{{ pw.total_pending }}</a>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Developer</th>
+                    <th>Pending Points (Active Workload)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dev in pw.dev_workloads %}
+                <tr>
+                    <td style="color:var(--text-primary); font-weight:500;">Developer: {{ dev.developer.username }}</td>
+                    <td>
+                        <a href="{% url 'ticket_filtered_list' %}?project={{ pw.project.pk }}&dev={{ dev.developer.pk }}" style="display:inline-block; padding:4px 12px; background:rgba(59,130,246,0.1); color:var(--accent-blue); border-radius:12px; font-weight:600; text-decoration:none;">
+                            {{ dev.pending_count }} items
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if pw.unassigned_count > 0 %}
+                <tr>
+                    <td style="color:var(--text-primary); font-weight:500;">Unassigned</td>
+                    <td>
+                        <a href="{% url 'ticket_filtered_list' %}?project={{ pw.project.pk }}&dev=none" style="display:inline-block; padding:4px 12px; background:rgba(245,158,11,0.1); color:#f59e0b; border-radius:12px; font-weight:600; text-decoration:none;">
+                            {{ pw.unassigned_count }} items
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% empty %}
+    <div style="text-align:center; padding: 40px; color: var(--text-muted);">You don't have any assigned projects yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+

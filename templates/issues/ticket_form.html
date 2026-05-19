@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 style="margin-bottom:8px;">{{ title }}</h1>
+<p style="color:var(--text-muted); margin-bottom:32px;">Fill in the details below. All QA fields ensure developers can reproduce and fix this issue quickly.</p>
+
+<div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius); border: 1px solid var(--border);">
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Issue Title *</label>
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                <label>Module</label>
+                {{ form.modules }}
+            </div>
+            <div class="form-group">
+                <label>Issue Identified Date</label>
+                {{ form.issue_identified_date }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Path (URL / File Path)</label>
+                {{ form.path }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label style="color:var(--accent-red);">Current Behaviour *</label>
+                {{ form.current_behaviour }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label style="color:var(--accent-green);">Expected Behaviour *</label>
+                {{ form.expected_behaviour }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Examples / Steps to Reproduce</label>
+                {{ form.examples }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>API / Other Data</label>
+                {{ form.api_or_other_datas }}
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                {{ form.priority }}
+            </div>
+            <div class="form-group">
+                <label>Estimated Time (hrs)</label>
+                {{ form.estimated_time_hours }}
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Assign to Developer</label>
+                {{ form.assignee }}
+            </div>
+        </div>
+        <div style="margin-top:24px; display:flex; gap:12px;">
+            <button type="submit" class="btn btn-primary">Log Issue</button>
+            <a href="{% url 'dashboard' %}" class="btn" style="background:var(--bg-card); color:var(--text-muted);">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

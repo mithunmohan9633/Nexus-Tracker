@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1>{{ role_title }} Dashboard</h1>
+</div>
+
+<div class="metrics-grid">
+    <a href="{% url 'project_list_all' %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="metric-card hover-card">
+            <h3>Total Projects</h3>
+            <div class="value">{{ projects_count }}</div>
+        </div>
+    </a>
+    <a href="{% url 'bugs_open_list' %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="metric-card hover-card" style="border-color: var(--accent-red);">
+            <h3 style="color: var(--accent-red);">Open Bugs</h3>
+            <div class="value">{{ open_tickets }}</div>
+        </div>
+    </a>
+    <a href="{% url 'bugs_closed_list' %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="metric-card hover-card" style="border-color: var(--accent-green);">
+            <h3 style="color: var(--accent-green);">Closed Bugs</h3>
+            <div class="value">{{ closed_tickets }}</div>
+        </div>
+    </a>
+</div>
+
+<h2>My Projects</h2>
+<table>
+    <tr>
+        <th>Project Name</th>
+        <th>Analysts</th>
+        <th>Developers</th>
+        <th>Bugs</th>
+        <th>Deadline</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    {% for p in recent_projects %}
+    <tr>
+        <td><a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a></td>
+        <td>{{ p.functional_analysts.count }} FAs</td>
+        <td>{{ p.developers.count }} Devs</td>
+        <td>{{ p.tickets.count }} Tickets</td>
+        <td>{{ p.deadline|date:"M d, Y"|default:"No deadline" }}</td>
+        <td>
+            {% if p.is_completed %}
+            <span style="background: var(--accent-green); color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Completed</span>
+            {% else %}
+            <span style="background: var(--accent-blue); color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Active</span>
+            {% endif %}
+        </td>
+        <td><a href="{% url 'manage_team_apm' p.pk %}" class="btn btn-primary" style="padding:6px 12px; font-size:12px;">Manage Team</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No projects assigned yet. Wait for a Project Manager to delegate one.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}
