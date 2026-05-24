@@ -7,17 +7,17 @@
 <div class="card">
     <table style="width: 100%; border-collapse: collapse;">
         <tr>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Project Name</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Manager (APM)</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Deadline</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Status</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Project Name</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Manager (APM)</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Deadline</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Status</th>
         </tr>
         {% for p in projects %}
         <tr>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);"><a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a></td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ p.apm.username|default:"Unassigned" }}</td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ p.deadline|date:"M d, Y"|default:"None" }}</td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);"><a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a></td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">{{ p.apm.username|default:"Unassigned" }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">{{ p.deadline|date:"M d, Y"|default:"None" }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">
                 {% if p.is_completed %}
                 <span style="background: var(--accent-green); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Completed</span>
                 {% else %}

@@ -11,7 +11,7 @@
         <h2>Assigned Functional Analysts</h2>
         <ul style="list-style: none; padding: 0;">
             {% for fa in fas %}
-            <li style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">{{ fa.username }} - <span style="color: var(--text-muted);">Responsible for QA/Review</span></li>
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border);">{{ fa.username }} - <span style="color: var(--text-muted);">Responsible for QA/Review</span></li>
             {% empty %}
             <li style="padding: 10px 0; color: var(--text-muted);">No FA assigned to this project.</li>
             {% endfor %}
@@ -22,7 +22,7 @@
         <h2>Bugs by Developer</h2>
         <ul style="list-style: none; padding: 0;">
             {% for dev in dev_stats %}
-            <li style="padding: 10px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
                 <span>{{ dev.username }}</span>
                 <span style="font-weight: bold; background: {% if type == 'open' %}var(--accent-red){% else %}var(--accent-green){% endif %}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ dev.count }}</span>
             </li>
@@ -37,15 +37,15 @@
     <h2>Ticket List</h2>
     <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
         <tr>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Ticket Title</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Assignee</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Status</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Ticket Title</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Assignee</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Status</th>
         </tr>
         {% for ticket in tickets %}
         <tr>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);"><a href="{% url 'ticket_detail' ticket.pk %}" style="color: var(--accent-blue); text-decoration: none;">{{ ticket.title }}</a></td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ ticket.assignee.username|default:"Unassigned" }}</td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">{{ ticket.get_status_display }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);"><a href="{% url 'ticket_detail' ticket.pk %}" style="color: var(--accent-blue); text-decoration: none;">{{ ticket.title }}</a></td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">{{ ticket.assignee.username|default:"Unassigned" }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">{{ ticket.get_status_display }}</td>
         </tr>
         {% endfor %}
     </table>

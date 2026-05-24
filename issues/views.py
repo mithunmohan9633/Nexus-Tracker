@@ -20,7 +20,7 @@ def dashboard(request):
     role = get_role(request.user)
 
     if role == 'PM':
-        projects = Project.objects.all()
+        projects = Project.objects.filter(is_deleted=False, is_completed=False)
         tickets = Ticket.objects.all()
         context = {
             'role_title': 'Project Manager',
@@ -32,7 +32,7 @@ def dashboard(request):
         return render(request, 'dashboard_pm.html', context)
 
     elif role == 'APM':
-        projects = Project.objects.filter(apm=request.user)
+        projects = Project.objects.filter(apm=request.user, is_deleted=False, is_completed=False)
         tickets = Ticket.objects.filter(project__in=projects)
         context = {
             'role_title': 'Assistant Project Manager',
@@ -45,7 +45,7 @@ def dashboard(request):
         return render(request, 'dashboard_apm.html', context)
 
     elif role == 'FA':
-        projects = Project.objects.filter(functional_analysts=request.user)
+        projects = Project.objects.filter(functional_analysts=request.user, is_deleted=False, is_completed=False)
         project_workloads = []
         grand_total_pending = 0
         for p in projects:
@@ -274,7 +274,7 @@ def ticket_detail(request, pk):
 
     # FA can view any ticket in their assigned projects
     if role == 'FA':
-        fa_projects = Project.objects.filter(functional_analysts=request.user)
+        fa_projects = Project.objects.filter(functional_analysts=request.user, is_deleted=False, is_completed=False)
         if ticket.project not in fa_projects:
             return redirect('dashboard')
     other_devs = ticket.project.developers.exclude(pk=request.user.pk) if role == 'DEV' else None
@@ -338,7 +338,7 @@ def ticket_filtered_list(request):
         return redirect('dashboard')
     project_id = request.GET.get('project')
     developer_id = request.GET.get('dev')
-    allowed_projects = Project.objects.filter(functional_analysts=request.user)
+    allowed_projects = Project.objects.filter(functional_analysts=request.user, is_deleted=False, is_completed=False)
     tickets = Ticket.objects.filter(project__in=allowed_projects).exclude(status='DONE').order_by('-updated_at')
     title = 'All Pending Issues Across All Projects'
     if project_id:
@@ -510,7 +510,7 @@ def get_timeframe_filter(request, date_field):
 
 @login_required
 def project_list_all(request):
-    projects = Project.objects.all().order_by('-created_at')
+    projects = Project.objects.filter(is_deleted=False, is_completed=False).order_by('-created_at')
     return render(request, 'issues/project_list_all.html', {'projects': projects})
 
 @login_required
@@ -644,3 +644,26 @@ def manage_team_apm(request, pk):
         'developers': developers,
     }
     return render(request, 'issues/manage_team_apm.html', context)
+
+
+@login_required
+def project_delete(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    if not (hasattr(request.user, 'profile') and request.user.profile.role == 'PM'):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied("Only PM can delete projects.")
+
+    if request.method == 'POST':
+        if not project.is_completed:
+            reason = request.POST.get('reason')
+            if reason:
+                project.delete_reason = reason
+        project.is_deleted = True
+        project.save()
+        return redirect('dashboard')
+    return redirect('project_detail', pk=pk)
+
+@login_required
+def project_archived_list(request):
+    projects = Project.objects.filter(Q(is_deleted=True) | Q(is_completed=True)).order_by('-created_at')
+    return render(request, 'issues/project_archived_list.html', {'projects': projects})

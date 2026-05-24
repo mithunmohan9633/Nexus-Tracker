@@ -2,7 +2,10 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
     <h1>{{ role_title }} Dashboard</h1>
-    <a href="{% url 'project_create' %}" class="btn btn-primary btn-header">+ New Project</a>
+    <div style="display: flex; gap: 15px;">
+        <a href="{% url 'project_archived_list' %}" class="btn btn-secondary btn-header" style="background: rgba(255,255,255,0.05);">Archived Projects</a>
+        <a href="{% url 'project_create' %}" class="btn btn-primary btn-header">+ New Project</a>
+    </div>
 </div>
 <div class="metrics-grid">
     <a href="{% url 'project_list_all' %}" style="text-decoration: none; color: inherit; display: block;"><div class="metric-card hover-card"><h3>Total Projects</h3><div class="value">{{ projects_count }}</div></div></a>

@@ -11,6 +11,10 @@
     {% elif project.is_completed %}
     <span style="background: var(--accent-green); color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold;">&#10003; COMPLETED</span>
     {% endif %}
+
+    {% if request.user.profile.role == 'PM' %}
+    <button class="btn btn-primary" onclick="openDeleteModal()" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-left: 10px; font-weight: 600; padding: 10px 20px; border-radius: 8px;">??? Delete Project</button>
+    {% endif %}
 </div>
 
 <div class="card" style="margin-bottom: 30px;">
@@ -19,9 +23,17 @@
     <p><strong>Deadline:</strong> {{ project.deadline|date:"M d, Y"|default:"No deadline set" }}</p>
     <p><strong>Created:</strong> {{ project.created_at|date:"M d, Y" }}</p>
     
+    
+    {% if project.is_deleted %}
+    <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: bold;">Abandoned/Deleted</span></p>
+    {% if project.delete_reason %}
+    <p><strong>Reason for Abandonment:</strong> {{ project.delete_reason }}</p>
+    {% endif %}
+    {% endif %}
+
     <div style="margin-top: 20px;">
         <h3>Progress: {{ progress }}%</h3>
-        <div style="width: 100%; background: var(--border-color); border-radius: 8px; height: 16px; overflow: hidden; margin-top: 10px;">
+        <div style="width: 100%; background: var(--border); border-radius: 8px; height: 16px; overflow: hidden; margin-top: 10px;">
             <div style="width: {{ progress }}%; background: var(--accent-blue); height: 100%;"></div>
         </div>
         <p style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">{{ done_tickets }} of {{ total_tickets }} tickets completed.</p>
@@ -44,11 +56,11 @@
 
 <!-- Modal Background -->
 <div id="completeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: var(--card-bg); padding: 30px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; border: 1px solid var(--border-color);">
+    <div style="background: var(--bg-card); padding: 30px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; border: 1px solid var(--border);">
         <h2>Complete Project?</h2>
         <p style="margin: 20px 0; color: var(--text-muted);">Are you sure you want to mark <strong>{{ project.name }}</strong> as completed?</p>
         <div style="display: flex; gap: 15px; justify-content: center;">
-            <button class="btn btn-secondary" onclick="closeCompleteModal()" style="background: var(--bg-hover);">Cancel</button>
+            <button class="btn btn-secondary" onclick="closeCompleteModal()" style="background: rgba(255,255,255,0.05);">Cancel</button>
             <form action="{% url 'project_complete' project.pk %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary" style="background: var(--accent-green);">Yes, Complete Project</button>
@@ -68,4 +80,35 @@
         modal.style.display = 'none';
     }
 </script>
+
+<!-- Delete Modal Background -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); padding: 30px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; border: 1px solid var(--border);">
+        <h2>Delete Project?</h2>
+        <p style="margin: 20px 0; color: var(--text-muted);">Are you sure you want to delete/abandon <strong>{{ project.name }}</strong>?</p>
+        <form action="{% url 'project_delete' project.pk %}" method="post">
+            {% csrf_token %}
+            {% if not project.is_completed %}
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label for="reason" style="display: block; margin-bottom: 5px; font-weight: 600;">Reason for abandoning:</label>
+                <textarea name="reason" id="reason" rows="3" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-primary);"></textarea>
+            </div>
+            {% endif %}
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" style="background: rgba(255,255,255,0.05);">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: #ef4444;">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+</script>
+
 {% endblock %}

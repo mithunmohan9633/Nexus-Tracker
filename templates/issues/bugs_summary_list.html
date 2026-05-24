@@ -5,28 +5,28 @@
     
     <form method="get" style="display: flex; gap: 10px; align-items: center;">
         <label for="filter" style="font-weight: 600;">Timeframe:</label>
-        <select name="filter" id="filter" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: #1e293b; color: var(--text-color);">
-            <option value="all" style="background: #1e293b; color: var(--text-color);" {% if current_filter == 'all' %}selected{% endif %}>All Time</option>
-            <option value="7days" style="background: #1e293b; color: var(--text-color);" {% if current_filter == '7days' %}selected{% endif %}>Last 7 Days</option>
-            <option value="30days" style="background: #1e293b; color: var(--text-color);" {% if current_filter == '30days' %}selected{% endif %}>Last 30 Days</option>
-            <option value="month" style="background: #1e293b; color: var(--text-color);" {% if current_filter == 'month' %}selected{% endif %}>This Month</option>
+        <select name="filter" id="filter" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: #1e293b; color: var(--text-primary);">
+            <option value="all" style="background: #1e293b; color: var(--text-primary);" {% if current_filter == 'all' %}selected{% endif %}>All Time</option>
+            <option value="7days" style="background: #1e293b; color: var(--text-primary);" {% if current_filter == '7days' %}selected{% endif %}>Last 7 Days</option>
+            <option value="30days" style="background: #1e293b; color: var(--text-primary);" {% if current_filter == '30days' %}selected{% endif %}>Last 30 Days</option>
+            <option value="month" style="background: #1e293b; color: var(--text-primary);" {% if current_filter == 'month' %}selected{% endif %}>This Month</option>
         </select>
     </form>
 </div>
 <div class="card">
     <table style="width: 100%; border-collapse: collapse;">
         <tr>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Project Name</th>
-            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color);">Total {{ type|title }} Bugs</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Project Name</th>
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">Total {{ type|title }} Bugs</th>
         </tr>
         {% for p in projects %}
         <tr>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">
                 <a href="{% if type == 'open' %}{% url 'bugs_open_detail' p.pk %}{% else %}{% url 'bugs_closed_detail' p.pk %}{% endif %}?filter={{ current_filter }}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">
                     {{ p.name }}
                 </a>
             </td>
-            <td style="padding: 12px; border-bottom: 1px solid var(--border-color); font-weight: bold; {% if type == 'open' %}color: var(--accent-red);{% else %}color: var(--accent-green);{% endif %}">
+            <td style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold; {% if type == 'open' %}color: var(--accent-red);{% else %}color: var(--accent-green);{% endif %}">
                 {{ p.bug_count }}
             </td>
         </tr>

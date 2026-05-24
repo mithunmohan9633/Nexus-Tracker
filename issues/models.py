@@ -24,6 +24,8 @@ class Project(models.Model):
     developers = models.ManyToManyField(User, related_name='assigned_dev_projects', blank=True, limit_choices_to={'profile__role': 'DEV'})
     deadline = models.DateField(null=True, blank=True)
     is_completed = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    delete_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -1,0 +1,44 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div style="margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between;">
+    <h1>Completed & Abandoned Projects</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+                <th style="padding: 12px; font-weight: 600;">Project Name</th>
+                <th style="padding: 12px; font-weight: 600;">Status</th>
+                <th style="padding: 12px; font-weight: 600;">Reason</th>
+                <th style="padding: 12px; font-weight: 600;">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+            <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 12px;">
+                    <a href="{% url 'project_detail' p.pk %}" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">{{ p.name }}</a>
+                </td>
+                <td style="padding: 12px;">
+                    {% if p.is_completed %}
+                    <span style="background: var(--accent-green); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Completed</span>
+                    {% elif p.is_deleted %}
+                    <span style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Abandoned</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 12px; color: var(--text-muted); font-size: 14px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {% if p.delete_reason %}{{ p.delete_reason }}{% else %}N/A{% endif %}
+                </td>
+                <td style="padding: 12px; font-size: 14px;">{{ p.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 20px; text-align: center; color: var(--text-muted);">No archived projects found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
